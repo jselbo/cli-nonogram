@@ -25,10 +25,21 @@ fun main() {
     // Enable jline debug logging
     Logger.getLogger("org.jline").level = Level.FINE
 
-    val terminal: Terminal = TerminalBuilder.builder()
-        .jna(false)
-        .jansi(true)
-        .build()
+    val terminal: Terminal
+    try {
+        terminal = TerminalBuilder.builder()
+            .jna(false)
+            .jansi(true)
+            .dumb(false)
+            .build()
+    } catch (e: RuntimeException) {
+        System.err.println("Error: '${e.message}'")
+        System.err.println("Failed to configure terminal. Ensure you are running from a system" +
+                " terminal (not from IntelliJ) and you are not running via gradle." +
+                " See README for instructions.")
+        exitProcess(1)
+    }
+
     terminal.enterRawMode()
 
     // On Windows it seems interrupt (ctrl+c) needs to be handled manually
