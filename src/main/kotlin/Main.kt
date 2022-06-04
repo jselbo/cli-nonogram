@@ -78,7 +78,9 @@ fun main() {
                 val curr = board1.grid[colCursor][rowCursor]
                 board1.grid[colCursor][rowCursor] = if (curr == CellState.FILL) CellState.EMPTY else CellState.FILL
             }
-            else -> throw IllegalStateException()
+            else -> {
+                // May be null on end of stream, if the program is already dying from ctrl+c
+            }
         }
 
         solved = isSolved()
