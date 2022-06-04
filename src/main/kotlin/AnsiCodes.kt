@@ -20,3 +20,9 @@ const val ANSI_UP = "\u001B[A"
 const val ANSI_DOWN = "\u001B[B"
 const val ANSI_RIGHT = "\u001B[C"
 const val ANSI_LEFT = "\u001B[D"
+
+// On Windows CMD I observed different values for arrow keys
+const val ANSI_UP_WIN = "\u001BOA"
+const val ANSI_DOWN_WIN = "\u001BOB"
+const val ANSI_RIGHT_WIN = "\u001BOC"
+const val ANSI_LEFT_WIN = "\u001BOD"

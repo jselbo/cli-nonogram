@@ -14,6 +14,8 @@ repositories {
 
 dependencies {
     implementation("org.jline:jline:3.21.0")
+    // Needed for Windows support
+    runtimeOnly("org.fusesource.jansi:jansi:2.4.0")
 
     testImplementation(kotlin("test"))
 }

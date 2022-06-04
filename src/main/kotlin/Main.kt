@@ -3,8 +3,11 @@ import org.jline.keymap.KeyMap
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 import java.io.PrintWriter
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.system.exitProcess
 
 // Only one puzzle for now :)
 val board1Cols = listOf(listOf(1,1,1), listOf(2,2), listOf(5), listOf(1), listOf(1))
@@ -19,17 +22,26 @@ enum class Action {
 }
 
 fun main() {
+    // Enable jline debug logging
+    Logger.getLogger("org.jline").level = Level.FINE
+
     val terminal: Terminal = TerminalBuilder.builder()
+        .jna(false)
         .jansi(true)
         .build()
     terminal.enterRawMode()
 
+    // On Windows it seems interrupt (ctrl+c) needs to be handled manually
+    terminal.handle(Terminal.Signal.INT) {
+        exitProcess(0)
+    }
+
     val bindingReader = BindingReader(terminal.reader())
     val keyMap = KeyMap<Action>()
-    keyMap.bind(Action.UP, ANSI_UP)
-    keyMap.bind(Action.DOWN, ANSI_DOWN)
-    keyMap.bind(Action.RIGHT, ANSI_RIGHT)
-    keyMap.bind(Action.LEFT, ANSI_LEFT)
+    keyMap.bind(Action.UP, ANSI_UP, ANSI_UP_WIN)
+    keyMap.bind(Action.DOWN, ANSI_DOWN, ANSI_DOWN_WIN)
+    keyMap.bind(Action.RIGHT, ANSI_RIGHT, ANSI_RIGHT_WIN)
+    keyMap.bind(Action.LEFT, ANSI_LEFT, ANSI_LEFT_WIN)
     keyMap.bind(Action.MARK_DOT, "x")
     keyMap.bind(Action.MARK_FILL, " ")
 
