@@ -33,5 +33,7 @@ application {
 }
 
 task<DefaultTask>("printClasspath") {
-    println(sourceSets.main.get().runtimeClasspath.files.joinToString(";"))
+    doFirst {
+        println(sourceSets.main.get().runtimeClasspath.files.joinToString(";"))
+    }
 }
