@@ -1,3 +1,3 @@
 
-rootProject.name = "CodeJam"
+rootProject.name = "cli-Nonogram"
 
