@@ -31,3 +31,7 @@ tasks.withType<KotlinCompile> {
 application {
     mainClass.set("MainKt")
 }
+
+task<DefaultTask>("printClasspath") {
+    println(sourceSets.main.get().runtimeClasspath.files.joinToString(";"))
+}

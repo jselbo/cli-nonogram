@@ -34,8 +34,7 @@ fun main() {
             .build()
     } catch (e: RuntimeException) {
         System.err.println("Error: '${e.message}'")
-        System.err.println("Failed to configure terminal. Ensure you are running from a system" +
-                " terminal (not from IntelliJ) and you are not running via gradle." +
+        System.err.println("Failed to configure terminal. Are you using the run script?" +
                 " See README for instructions.")
         exitProcess(1)
     }
