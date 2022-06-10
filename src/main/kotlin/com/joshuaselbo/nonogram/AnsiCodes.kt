@@ -1,3 +1,5 @@
+package com.joshuaselbo.nonogram
+
 const val ANSI_CLEAR = "\u001Bc"
 const val ANSI_RESET = "\u001B[0m"
 const val ANSI_BLACK = "\u001B[30m"
@@ -20,6 +22,7 @@ const val ANSI_UP = "\u001B[A"
 const val ANSI_DOWN = "\u001B[B"
 const val ANSI_RIGHT = "\u001B[C"
 const val ANSI_LEFT = "\u001B[D"
+const val ANSI_CR = "\u000D"
 
 // On Windows CMD I observed different values for arrow keys
 const val ANSI_UP_WIN = "\u001BOA"

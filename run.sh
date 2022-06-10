@@ -6,4 +6,4 @@ set -e
 
 CLASSPATH=$(./gradlew -q printClasspath)
 
-java -cp "$CLASSPATH" MainKt
+java -cp "$CLASSPATH" com.joshuaselbo.nonogram.MainKt

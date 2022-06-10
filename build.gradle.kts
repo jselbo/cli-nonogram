@@ -5,8 +5,8 @@ plugins {
     application
 }
 
-group = "me.jselbo"
-version = "1.0-SNAPSHOT"
+group = "com.joshuaselbo.nonogram"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -29,7 +29,7 @@ tasks.withType<KotlinCompile> {
 }
 
 application {
-    mainClass.set("MainKt")
+    mainClass.set("com.joshuaselbo.nonogram.MainKt")
 }
 
 task<DefaultTask>("printClasspath") {
