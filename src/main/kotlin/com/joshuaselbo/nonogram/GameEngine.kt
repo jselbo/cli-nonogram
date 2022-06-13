@@ -3,7 +3,6 @@ package com.joshuaselbo.nonogram
 import org.jline.keymap.BindingReader
 import org.jline.keymap.KeyMap
 import org.jline.terminal.Terminal
-import java.io.PrintWriter
 import kotlin.math.max
 import kotlin.math.min
 
@@ -110,26 +109,45 @@ class GameEngine(private val terminal: Terminal) {
                 val puzzle = checkNotNull(selectedPuzzle)
 
                 val board = loadBoard(puzzle.file)
+                val boardFormat = BoardFormatter().format(board)
+
+                writer.println(ANSI_CLEAR)
+                writer.println(boardFormat.contents)
+
+                writer.print(getTerminalCursorPos(boardFormat))
 
                 var solved = false
                 while (!solved) {
-                    writer.println(ANSI_CLEAR)
-                    printBoard(writer, board)
-
                     when (bindingReader.readBinding(puzzleKeyMap)) {
-                        Action.UP -> rowCursor = max(0, rowCursor - 1)
-                        Action.DOWN -> rowCursor = min(board.rows.size - 1, rowCursor + 1)
-                        Action.LEFT -> colCursor = max(0, colCursor - 1)
-                        Action.RIGHT -> colCursor = min(board.cols.size - 1, colCursor + 1)
+                        Action.UP -> {
+                            rowCursor = max(0, rowCursor - 1)
+                            writer.print(getTerminalCursorPos(boardFormat))
+                        }
+                        Action.DOWN -> {
+                            rowCursor = min(board.rows.size - 1, rowCursor + 1)
+                            writer.print(getTerminalCursorPos(boardFormat))
+                        }
+                        Action.LEFT -> {
+                            colCursor = max(0, colCursor - 1)
+                            writer.print(getTerminalCursorPos(boardFormat))
+                        }
+                        Action.RIGHT -> {
+                            colCursor = min(board.cols.size - 1, colCursor + 1)
+                            writer.print(getTerminalCursorPos(boardFormat))
+                        }
                         Action.MARK_DOT -> {
-                            val curr = board.grid[colCursor][rowCursor]
-                            board.grid[colCursor][rowCursor] =
+                            val curr = board.states[colCursor][rowCursor]
+                            val newCellState =
                                 if (curr == CellState.DOT) CellState.EMPTY else CellState.DOT
+                            board.states[colCursor][rowCursor] = newCellState
+                            writer.print(newCellState.toFormatString() + ANSI_LEFT)
                         }
                         Action.MARK_FILL -> {
-                            val curr = board.grid[colCursor][rowCursor]
-                            board.grid[colCursor][rowCursor] =
+                            val curr = board.states[colCursor][rowCursor]
+                            val newCellState =
                                 if (curr == CellState.FILL) CellState.EMPTY else CellState.FILL
+                            board.states[colCursor][rowCursor] = newCellState
+                            writer.print(newCellState.toFormatString() + ANSI_LEFT)
                         }
                         else -> {
                             // May be null on end of stream, if the program is already dying from ctrl+c
@@ -139,8 +157,7 @@ class GameEngine(private val terminal: Terminal) {
                     solved = isSolved(board)
                 }
 
-                writer.println(ANSI_CLEAR)
-                printBoard(writer, board)
+                writer.print(ansiCursorPosition(boardFormat.endRowIndex, 1))
 
                 writer.run {
                     println("""
@@ -165,50 +182,13 @@ class GameEngine(private val terminal: Terminal) {
         }
     }
 
-    // assumes single digit block lengths... oof
-    // todo support multiple digits
-    private fun printBoard(writer: PrintWriter, board: Board) {
-        val maxColLen = board.cols.maxOf { col -> col.size }
-        val maxRowLen = board.rows.maxOf { row -> row.size }
-
-        for (i in 0 until maxColLen) {
-            var line = "".padStart(maxRowLen + 1)
-            for (col in board.cols) {
-                val char = if (maxColLen - i - 1 < col.size) col[maxColLen - i - 1] else ' '
-                line += "|$char"
-            }
-            line += "|"
-            writer.println(line)
-        }
-
-        val separatorLen = maxRowLen + 1 + board.cols.size * 2 + 1
-        writer.println("-".repeat(separatorLen))
-
-        for (i in 0 until board.rows.size) {
-            val pad = (maxRowLen - board.rows[i].size) * 2
-            var line = "".padStart(pad)
-            for (n in board.rows[i]) {
-                line += "$n|"
-            }
-
-            for (j in 0 until board.cols.size) {
-                val cell = board.grid[j][i].toFormatString()
-                line += if (i == rowCursor && j == colCursor) {
-                    "$ANSI_GREEN$ANSI_UNDERLINE$cell$ANSI_RESET"
-                } else {
-                    cell
-                }
-                line += "|"
-            }
-
-            writer.println(line)
-        }
-
-        writer.println("-".repeat(separatorLen))
-        writer.flush()
+    private fun getTerminalCursorPos(formatterResult: BoardFormat): String {
+        val row = formatterResult.startRowIndex + rowCursor
+        val col = formatterResult.startColIndex + colCursor*2 // account for "|" separator
+        return ansiCursorPosition(row, col)
     }
 
-    // doesn't work with "0" block length
+    // TODO support "0" block length
     private fun isSolved(board: Board): Boolean {
         for (colI in 0 until board.cols.size) {
             val col = board.cols[colI].toMutableList()
@@ -218,7 +198,7 @@ class GameEngine(private val terminal: Terminal) {
                 if (rowI >= board.rows.size) {
                     return false
                 }
-                if (board.grid[colI][rowI] == CellState.FILL) {
+                if (board.states[colI][rowI] == CellState.FILL) {
                     blockCount++
                 }
                 if (blockCount == col.first()) {
@@ -228,7 +208,7 @@ class GameEngine(private val terminal: Terminal) {
                 rowI++
             }
             while (rowI < board.rows.size) {
-                if (board.grid[colI][rowI] == CellState.FILL) {
+                if (board.states[colI][rowI] == CellState.FILL) {
                     return false
                 }
                 rowI++
@@ -242,7 +222,7 @@ class GameEngine(private val terminal: Terminal) {
                 if (colI >= board.cols.size) {
                     return false
                 }
-                if (board.grid[colI][rowI] == CellState.FILL) {
+                if (board.states[colI][rowI] == CellState.FILL) {
                     blockCount++
                 }
                 if (blockCount == row.first()) {
@@ -252,7 +232,7 @@ class GameEngine(private val terminal: Terminal) {
                 colI++
             }
             while (colI < board.cols.size) {
-                if (board.grid[colI][rowI] == CellState.FILL) {
+                if (board.states[colI][rowI] == CellState.FILL) {
                     return false
                 }
                 colI++

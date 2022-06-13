@@ -1,7 +1,8 @@
 package com.joshuaselbo.nonogram
 
 class Board(val cols: List<List<Int>>, val rows: List<List<Int>>) {
-    val grid = Array(cols.size) {
+
+    val states = Array(cols.size) {
         Array(rows.size) { CellState.EMPTY }
     }
 

@@ -29,3 +29,5 @@ const val ANSI_UP_WIN = "\u001BOA"
 const val ANSI_DOWN_WIN = "\u001BOB"
 const val ANSI_RIGHT_WIN = "\u001BOC"
 const val ANSI_LEFT_WIN = "\u001BOD"
+
+fun ansiCursorPosition(line: Int, col: Int): String = "\u001B[${line};${col}H"

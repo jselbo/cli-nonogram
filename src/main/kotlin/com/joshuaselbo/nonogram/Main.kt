@@ -28,6 +28,9 @@ fun main() {
 
     // On Windows it seems interrupt (ctrl+c) needs to be handled manually
     terminal.handle(Terminal.Signal.INT) {
+        // Clear terminal first; otherwise shell resumes wherever cursor was and looks bad
+        terminal.writer().println(ANSI_CLEAR)
+
         exitProcess(0)
     }
 
