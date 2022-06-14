@@ -37,8 +37,7 @@ class GameEngine(private val terminal: Terminal) {
 
     private val puzzles = listOf(
         Puzzle("Puzzle 1 (Easy)", "p1.txt"),
-        Puzzle("Puzzle 2 (Easy)", "p2.txt"),
-        Puzzle("Puzzle 3 (Easy)", "p3.txt")
+        Puzzle("Debug", "debug.txt")
     )
 
     private var gameState = GameState.MENU
@@ -154,7 +153,7 @@ class GameEngine(private val terminal: Terminal) {
                         }
                     }
 
-                    solved = isSolved(board)
+                    solved = board.isSolved()
                 }
 
                 writer.print(ansiCursorPosition(boardFormat.endRowIndex, 1))
@@ -186,59 +185,6 @@ class GameEngine(private val terminal: Terminal) {
         val row = formatterResult.startRowIndex + rowCursor
         val col = formatterResult.startColIndex + colCursor*2 // account for "|" separator
         return ansiCursorPosition(row, col)
-    }
-
-    // TODO support "0" block length
-    private fun isSolved(board: Board): Boolean {
-        for (colI in 0 until board.cols.size) {
-            val col = board.cols[colI].toMutableList()
-            var rowI = 0
-            var blockCount = 0
-            while (col.isNotEmpty()) {
-                if (rowI >= board.rows.size) {
-                    return false
-                }
-                if (board.states[colI][rowI] == CellState.FILL) {
-                    blockCount++
-                }
-                if (blockCount == col.first()) {
-                    col.removeFirst()
-                    blockCount = 0
-                }
-                rowI++
-            }
-            while (rowI < board.rows.size) {
-                if (board.states[colI][rowI] == CellState.FILL) {
-                    return false
-                }
-                rowI++
-            }
-        }
-        for (rowI in 0 until board.rows.size) {
-            val row = board.rows[rowI].toMutableList()
-            var colI = 0
-            var blockCount = 0
-            while (row.isNotEmpty()) {
-                if (colI >= board.cols.size) {
-                    return false
-                }
-                if (board.states[colI][rowI] == CellState.FILL) {
-                    blockCount++
-                }
-                if (blockCount == row.first()) {
-                    row.removeFirst()
-                    blockCount = 0
-                }
-                colI++
-            }
-            while (colI < board.cols.size) {
-                if (board.states[colI][rowI] == CellState.FILL) {
-                    return false
-                }
-                colI++
-            }
-        }
-        return true
     }
 
 }

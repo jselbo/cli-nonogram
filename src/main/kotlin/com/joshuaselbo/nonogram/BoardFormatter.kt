@@ -18,8 +18,9 @@ class BoardFormatter {
         val maxColLen = board.cols.maxOf { col -> col.size }
         val maxRowLen = board.rows.maxOf { row -> row.size }
 
+        val colPad = maxRowLen*2 - 1
         for (i in 0 until maxColLen) {
-            var line = "".padStart(maxRowLen + 1)
+            var line = "".padStart(colPad)
             for (col in board.cols) {
                 val char = if (maxColLen - i - 1 < col.size) col[maxColLen - i - 1] else ' '
                 line += "|$char"
@@ -28,7 +29,7 @@ class BoardFormatter {
             formattedStr += line
         }
 
-        val separatorLen = maxRowLen + 1 + board.cols.size * 2 + 1
+        val separatorLen = colPad + board.cols.size * 2 + 1
         formattedStr += "-".repeat(separatorLen) + "\n"
 
         for (i in 0 until board.rows.size) {

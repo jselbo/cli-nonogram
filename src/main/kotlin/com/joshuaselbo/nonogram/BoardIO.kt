@@ -33,6 +33,9 @@ fun loadBoard(filename: String): Board {
                     error("Invalid block value: '$block'")
                 }
             }
+            if (blocks.any { it == 0 } && blocks.size > 1) {
+                error("If there is a 'zero' block, it must be the only block in the row or column.")
+            }
 
             val list = if (readingRows) rows else columns
             list.add(blocks)
