@@ -110,6 +110,9 @@ class GameEngine(private val terminal: Terminal) {
                 val board = loadBoard(puzzle.file)
                 val boardFormat = BoardFormatter().format(board)
 
+                rowCursor = 0
+                colCursor = 0
+
                 writer.println(ANSI_CLEAR)
                 writer.println(boardFormat.contents)
 
