@@ -8,6 +8,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.system.exitProcess
 
+private const val CONTINUE_MESSAGE = "Press any key to continue..."
+
 private enum class GameState {
     MENU,
     CONTROLS,
@@ -107,14 +109,13 @@ class GameEngine(private val terminal: Terminal) {
                 writer.run {
                     println(
                         """
-                        == Nonogram Puzzle ==
-                        
                         $ANSI_BOLD Controls$ANSI_RESET
                         
-                          - Up, Down, Right, Left arrow keys
-                          - Space -> Mark as filled
-                          - x     -> Mark as empty
-                          Press any key to continue...
+                          - Up, Down, Right, Left -> Move
+                          - Space                 -> Mark filled
+                          - x                     -> Mark empty
+                          
+                          $CONTINUE_MESSAGE
                     """.trimIndent()
                     )
                     flush()
@@ -183,9 +184,9 @@ class GameEngine(private val terminal: Terminal) {
 
                 writer.run {
                     println("""
-                        Puzzle Solved!!
+                        ${ANSI_BOLD}${ANSI_GREEN}Puzzle Solved!$ANSI_RESET
                         
-                        Press any key to continue...
+                        $CONTINUE_MESSAGE
                     """.trimIndent())
                     flush()
                 }
