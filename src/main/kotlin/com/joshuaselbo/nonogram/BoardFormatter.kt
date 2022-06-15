@@ -2,46 +2,72 @@ package com.joshuaselbo.nonogram
 
 class BoardFormat(
     val contents: String,
-    /** Terminal cursor row index of first cell */
-    val startRowIndex: Int,
-    /** Terminal cursor col index of first cell */
-    val startColIndex: Int,
-    /** Terminal cursor row index after the puzzle end */
-    val endRowIndex: Int)
+    // Not including "|" char
+    private val colWidths: List<Int>,
+    private val rowSize: Int,
+    maxColBlockLen: Int,
+    maxRowLen: Int) {
+
+    private val startRowIndex = maxColBlockLen + 3
+    private val startColIndex = maxRowLen
+
+    fun getCursorPosition(row: Int, col: Int): Pair<Int, Int> {
+        val cursorRow = startRowIndex + row
+        var cursorCol = startColIndex+1
+        for (i in 0 until col) {
+            cursorCol += colWidths[i]+1
+        }
+        return Pair(cursorRow, cursorCol)
+    }
+
+    fun getEndCursorPosition(): Pair<Int, Int> {
+        val endRowIndex = startRowIndex + rowSize + 2
+        return Pair(endRowIndex, 1)
+    }
+}
 
 class BoardFormatter {
 
-    // assumes single digit block lengths... oof
-    // todo support multiple digits
     fun format(board: Board): BoardFormat {
         var formattedStr = ""
-        val maxColLen = board.cols.maxOf { col -> col.size }
-        val maxRowLen = board.rows.maxOf { row -> row.size }
+        val maxColBlockLen = board.cols.maxOf { col -> col.size }
+        val colWidths = board.cols.map { col -> col.maxOf { n -> digitCount(n) } }
+        val maxRowLen = board.rows.maxOf { row ->
+            row.sumOf { n -> digitCount(n)+1 }
+        }
 
-        val colPad = maxRowLen*2 - 1
-        for (i in 0 until maxColLen) {
-            var line = "".padStart(colPad)
-            for (col in board.cols) {
-                val char = if (maxColLen - i - 1 < col.size) col[maxColLen - i - 1] else ' '
-                line += "|$char"
+        for (i in 0 until maxColBlockLen) {
+            var line = "".padStart(maxRowLen-1)
+            for ((colIndex, col) in board.cols.withIndex()) {
+                val maxDigitLen = colWidths[colIndex]
+                line += if (maxColBlockLen - i - 1 < col.size) {
+                    val block = col[maxColBlockLen - i - 1]
+                    val digitCount = digitCount(block)
+                    val padded = block.toString() + " ".repeat(maxDigitLen - digitCount)
+                    "|$padded"
+                } else {
+                    val padded = " ".repeat(maxDigitLen)
+                    "|$padded"
+                }
             }
             line += "|\n"
             formattedStr += line
         }
 
-        val separatorLen = colPad + board.cols.size * 2 + 1
+        val separatorLen = maxRowLen + colWidths.sumOf { w -> w + 1 }
         formattedStr += "-".repeat(separatorLen) + "\n"
 
         for (i in 0 until board.rows.size) {
-            val pad = (maxRowLen - board.rows[i].size) * 2
-            var line = "".padStart(pad)
+            val rowLen = board.rows[i].sumOf { n -> digitCount(n)+1 }
+            var line = " ".repeat(maxRowLen - rowLen)
             for (n in board.rows[i]) {
                 line += "$n|"
             }
 
             for (j in 0 until board.cols.size) {
                 val cell = board.states[j][i].toFormatString()
-                line += "$cell|"
+                val pad = " ".repeat(colWidths[j] - 1)
+                line += "$cell$pad|"
             }
 
             formattedStr += line + "\n"
@@ -49,9 +75,9 @@ class BoardFormatter {
 
         formattedStr += "-".repeat(separatorLen) + "\n"
 
-        val startRowIndex = maxColLen + 3
-        val startColIndex = maxRowLen*2 + 1
-        val endRowIndex = startRowIndex + board.rows.size + 2
-        return BoardFormat(formattedStr, startRowIndex, startColIndex, endRowIndex)
+        val rowSize = board.rows.size
+        return BoardFormat(formattedStr, colWidths, rowSize, maxColBlockLen, maxRowLen)
     }
+
+    private fun digitCount(n: Int) = n.toString().length
 }

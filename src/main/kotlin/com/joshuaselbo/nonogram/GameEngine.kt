@@ -159,7 +159,7 @@ class GameEngine(private val terminal: Terminal) {
                     solved = board.isSolved()
                 }
 
-                writer.print(ansiCursorPosition(boardFormat.endRowIndex, 1))
+                writer.print(getEndTerminalCursorPos(boardFormat))
 
                 writer.run {
                     println("""
@@ -184,9 +184,13 @@ class GameEngine(private val terminal: Terminal) {
         }
     }
 
-    private fun getTerminalCursorPos(formatterResult: BoardFormat): String {
-        val row = formatterResult.startRowIndex + rowCursor
-        val col = formatterResult.startColIndex + colCursor*2 // account for "|" separator
+    private fun getTerminalCursorPos(format: BoardFormat): String {
+        val (row, col) = format.getCursorPosition(rowCursor, colCursor)
+        return ansiCursorPosition(row, col)
+    }
+
+    private fun getEndTerminalCursorPos(format: BoardFormat): String {
+        val (row, col) = format.getEndCursorPosition()
         return ansiCursorPosition(row, col)
     }
 
