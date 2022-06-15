@@ -2,9 +2,9 @@
 
 ### Overview
 
-Simple terminal-based nonogram puzzle solver.
+Terminal-based nonogram puzzle game with 10 included puzzles and custom puzzle support.
 
-Only one puzzle is included for now. :)
+TODO add gif
 
 For more information on nonogram puzzles: https://en.wikipedia.org/wiki/Nonogram
 
@@ -18,6 +18,10 @@ For more information on nonogram puzzles: https://en.wikipedia.org/wiki/Nonogram
 - Run script:
   - Windows: `run.bat`
   - Mac/Linux: `./run.sh`
+
+To load a custom puzzle from file:
+- Windows: `run.bat <filename>`
+- Mac/Linux: `./run.sh <filename>`
 
 ### Technical Details
 

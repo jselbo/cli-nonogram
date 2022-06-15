@@ -1,12 +1,24 @@
 package com.joshuaselbo.nonogram
 
+import java.io.BufferedReader
+import java.nio.file.Path
+import kotlin.io.path.bufferedReader
+
 const val SUPPORTED_VERSION = 1
 const val COL_ROW_SEPARATOR = "="
 
 class DummyClass
 
-fun loadBoard(filename: String): Board {
+fun loadBoardFromFile(path: Path): Board {
+    return loadBoard(path.bufferedReader())
+}
+
+fun loadBoardFromResource(filename: String): Board {
     val reader = DummyClass::class.java.classLoader.getResourceAsStream(filename).bufferedReader()
+    return loadBoard(reader)
+}
+
+private fun loadBoard(reader: BufferedReader): Board {
     val version = reader.readLine().trim('v', 'V').toInt()
     if (version > SUPPORTED_VERSION) {
         error("Unsupported file version: $version")

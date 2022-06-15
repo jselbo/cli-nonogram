@@ -3,8 +3,10 @@ package com.joshuaselbo.nonogram
 import org.jline.keymap.BindingReader
 import org.jline.keymap.KeyMap
 import org.jline.terminal.Terminal
+import java.nio.file.Path
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.system.exitProcess
 
 private enum class GameState {
     MENU,
@@ -14,7 +16,18 @@ private enum class GameState {
     KEYBOARD_DEBUG,
 }
 
-private class Puzzle(val name: String, val file: String)
+private interface PuzzleIdentifier {
+    fun load(): Board
+}
+private class ResourcePuzzleIdentifier(val filename: String) : PuzzleIdentifier {
+    override fun load(): Board = loadBoardFromResource(filename)
+}
+
+private class FilePuzzleIdentifier(val path: Path) : PuzzleIdentifier {
+    override fun load(): Board = loadBoardFromFile(path)
+}
+
+private class Puzzle(val name: String, val identifier: PuzzleIdentifier)
 
 class GameEngine(private val terminal: Terminal) {
 
@@ -36,17 +49,24 @@ class GameEngine(private val terminal: Terminal) {
     }
 
     private val puzzles = listOf(
-        Puzzle("Puzzle 1 (Easy)", "p1.txt"),
-        Puzzle("Debug", "debug.txt")
+        Puzzle("Puzzle 1 (Easy)", ResourcePuzzleIdentifier("p1.txt")),
+        Puzzle("Debug", ResourcePuzzleIdentifier("debug.txt"))
     )
 
     private var gameState = GameState.MENU
 
     private var menuCursorIndex = 0
     private var selectedPuzzle: Puzzle? = null
+    private var exitAfterSolve = false
 
     private var rowCursor = 0
     private var colCursor = 0
+
+    fun selectCustomPuzzle(path: Path) {
+        selectedPuzzle = Puzzle("Custom", FilePuzzleIdentifier(path))
+        gameState = GameState.CONTROLS
+        exitAfterSolve = true
+    }
 
     fun gameLoop() {
         while (true) {
@@ -107,7 +127,7 @@ class GameEngine(private val terminal: Terminal) {
             GameState.PUZZLE -> {
                 val puzzle = checkNotNull(selectedPuzzle)
 
-                val board = loadBoard(puzzle.file)
+                val board = puzzle.identifier.load()
                 val boardFormat = BoardFormatter().format(board)
 
                 rowCursor = 0
@@ -172,7 +192,11 @@ class GameEngine(private val terminal: Terminal) {
 
                 terminal.reader().read()
 
-                gameState = GameState.MENU
+                if (exitAfterSolve) {
+                    exitProcess(0)
+                } else {
+                    gameState = GameState.MENU
+                }
             }
             GameState.KEYBOARD_DEBUG -> {
                 writer.println("== Keyboard Debug Mode ==")

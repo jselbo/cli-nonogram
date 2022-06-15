@@ -2,11 +2,29 @@ package com.joshuaselbo.nonogram
 
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
+import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.io.path.Path
+import kotlin.io.path.notExists
 import kotlin.system.exitProcess
 
-fun main() {
+fun main(args: Array<String>) {
+    if (args.size > 1) {
+        System.err.println("Usage: ${getScriptName()} <custom-puzzle-file>")
+        exitProcess(1)
+    }
+    val customPuzzlePath: Path?
+    if (args.isNotEmpty()) {
+        customPuzzlePath = Path(args[0])
+        if (customPuzzlePath.notExists()) {
+            System.err.println("File '$customPuzzlePath' does not exist")
+            exitProcess(1)
+        }
+    } else {
+        customPuzzlePath = null
+    }
+
     // Enable jline debug logging
     Logger.getLogger("org.jline").level = Level.FINE
 
@@ -35,5 +53,17 @@ fun main() {
     }
 
     val gameEngine = GameEngine(terminal)
+    if (customPuzzlePath != null) {
+        gameEngine.selectCustomPuzzle(customPuzzlePath)
+    }
     gameEngine.gameLoop()
+}
+
+private fun getScriptName(): String {
+    return if (isWindows()) "run.bat" else "run.sh"
+}
+
+private fun isWindows(): Boolean {
+    val os = System.getProperty("os.name")
+    return os.startsWith("Windows")
 }
