@@ -18,11 +18,13 @@ const val ANSI_UNDERLINE = "\u001B[4m"
 const val ANSI_STOP_UNDERLINE = "\u001B[24m"
 const val ANSI_BLINK = "\u001B[5m"
 
+const val ANSI_CR = "\u000D"
+const val ANSI_ESC = "\u001B"
+
 const val ANSI_UP = "\u001B[A"
 const val ANSI_DOWN = "\u001B[B"
 const val ANSI_RIGHT = "\u001B[C"
 const val ANSI_LEFT = "\u001B[D"
-const val ANSI_CR = "\u000D"
 
 // On Windows CMD I observed different values for arrow keys
 const val ANSI_UP_WIN = "\u001BOA"

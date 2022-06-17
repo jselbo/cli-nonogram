@@ -30,41 +30,64 @@ class BoardFormatter {
 
     fun format(board: Board): BoardFormat {
         var formattedStr = ""
-        val maxColBlockLen = board.cols.maxOf { col -> col.size }
-        val colWidths = board.cols.map { col -> col.maxOf { n -> digitCount(n) } }
-        val maxRowLen = board.rows.maxOf { row ->
-            row.sumOf { n -> digitCount(n)+1 }
-        }
 
-        for (i in 0 until maxColBlockLen) {
-            var line = "".padStart(maxRowLen-1)
-            for ((colIndex, col) in board.cols.withIndex()) {
-                val maxDigitLen = colWidths[colIndex]
-                line += if (maxColBlockLen - i - 1 < col.size) {
-                    val block = col[maxColBlockLen - i - 1]
-                    val digitCount = digitCount(block)
-                    val padded = block.toString() + " ".repeat(maxDigitLen - digitCount)
-                    "|$padded"
-                } else {
-                    val padded = " ".repeat(maxDigitLen)
-                    "|$padded"
+        val maxColBlockLen: Int
+        val colWidths: List<Int>
+        val maxRowLen: Int
+        when (board) {
+            is SolvableBoard -> {
+                maxColBlockLen = board.columnBlocks.maxOf { col -> col.size }
+                colWidths = board.columnBlocks.map { col -> col.maxOf { n -> digitCount(n) } }
+                maxRowLen = board.rowBlocks.maxOf { row ->
+                    row.sumOf { n -> digitCount(n)+1 }
                 }
             }
-            line += "|\n"
-            formattedStr += line
+            is PuzzleCreatorBoard -> {
+                maxColBlockLen = 0
+                colWidths = List(board.columnSize) { 1 }
+                maxRowLen = 1
+            }
         }
 
-        val separatorLen = maxRowLen + colWidths.sumOf { w -> w + 1 }
+        if (board is SolvableBoard) {
+            for (i in 0 until maxColBlockLen) {
+                var line = "".padStart(maxRowLen - 1)
+                for ((colIndex, col) in board.columnBlocks.withIndex()) {
+                    val maxDigitLen = colWidths[colIndex]
+                    line += if (maxColBlockLen - i - 1 < col.size) {
+                        val block = col[maxColBlockLen - i - 1]
+                        val digitCount = digitCount(block)
+                        val padded = block.toString() + " ".repeat(maxDigitLen - digitCount)
+                        "|$padded"
+                    } else {
+                        val padded = " ".repeat(maxDigitLen)
+                        "|$padded"
+                    }
+                }
+                line += "|\n"
+                formattedStr += line
+            }
+        }
+
+        val separatorLen = maxRowLen + colWidths.sum() + board.columnSize
         formattedStr += "-".repeat(separatorLen) + "\n"
 
-        for (i in 0 until board.rows.size) {
-            val rowLen = board.rows[i].sumOf { n -> digitCount(n)+1 }
-            var line = " ".repeat(maxRowLen - rowLen)
-            for (n in board.rows[i]) {
-                line += "$n|"
+        for (i in 0 until board.rowSize) {
+            var line = ""
+            when (board) {
+                is SolvableBoard -> {
+                    val rowLen = board.rowBlocks[i].sumOf { n -> digitCount(n)+1 }
+                    line += " ".repeat(maxRowLen - rowLen)
+                    for (n in board.rowBlocks[i]) {
+                        line += "$n|"
+                    }
+                }
+                is PuzzleCreatorBoard -> {
+                    line += "|"
+                }
             }
 
-            for (j in 0 until board.cols.size) {
+            for (j in 0 until board.columnSize) {
                 val cell = board.states[j][i].toFormatString()
                 val pad = " ".repeat(colWidths[j] - 1)
                 line += "$cell$pad|"
@@ -75,8 +98,7 @@ class BoardFormatter {
 
         formattedStr += "-".repeat(separatorLen) + "\n"
 
-        val rowSize = board.rows.size
-        return BoardFormat(formattedStr, colWidths, rowSize, maxColBlockLen, maxRowLen)
+        return BoardFormat(formattedStr, colWidths, board.rowSize, maxColBlockLen, maxRowLen)
     }
 
     private fun digitCount(n: Int) = n.toString().length

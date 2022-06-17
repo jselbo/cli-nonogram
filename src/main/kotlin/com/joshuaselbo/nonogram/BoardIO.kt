@@ -18,6 +18,18 @@ fun loadBoardFromResource(filename: String): Board {
     return loadBoard(reader)
 }
 
+fun serialize(board: Board): String {
+    var contents = "$SUPPORTED_VERSION\n"
+    for (colBlocks in board.countColumnBlocks()) {
+        contents += formatBlocks(colBlocks).joinToString(" ") + "\n"
+    }
+    contents += "=\n"
+    for (rowBlocks in board.countRowBlocks()) {
+        contents += formatBlocks(rowBlocks).joinToString(" ") + "\n"
+    }
+    return contents
+}
+
 private fun loadBoard(reader: BufferedReader): Board {
     val version = reader.readLine().trim('v', 'V').toInt()
     if (version > SUPPORTED_VERSION) {
@@ -59,5 +71,8 @@ private fun loadBoard(reader: BufferedReader): Board {
     if (rows.isEmpty()) {
         error("No rows")
     }
-    return Board(columns, rows)
+    return SolvableBoard(columns, rows)
 }
+
+private fun formatBlocks(blocks: List<Int>): List<Int> =
+    blocks.ifEmpty { SolvableBoard.emptyBlockIndicator }

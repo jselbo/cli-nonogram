@@ -1,39 +1,22 @@
 package com.joshuaselbo.nonogram
 
-class Board(val cols: List<List<Int>>, val rows: List<List<Int>>) {
+sealed class Board(val columnSize: Int, val rowSize: Int) {
 
-    private val emptyBlockIndicator = listOf(0)
-
-    val states = Array(cols.size) {
-        Array(rows.size) { CellState.EMPTY }
+    val states = Array(columnSize) {
+        Array(rowSize) { CellState.EMPTY }
     }
 
-    fun isSolved(): Boolean {
-        for (colIndex in cols.indices) {
-            val colStates = states[colIndex]
-            var expected = cols[colIndex]
-            if (expected == emptyBlockIndicator) {
-                expected = emptyList()
-            }
-            if (countBlocks(colStates) != expected) {
-                return false
-            }
-        }
-        for (rowIndex in rows.indices) {
+    fun countColumnBlocks(): List<List<Int>> =
+        states.map { col -> countBlocks(col.toList()) }
+
+    fun countRowBlocks(): List<List<Int>> {
+        val rowBlocks = mutableListOf<List<Int>>()
+        for (rowIndex in 0 until rowSize) {
             val rowStates = states.map { col -> col[rowIndex] }
-            var expected = rows[rowIndex]
-            if (expected == emptyBlockIndicator) {
-                expected = emptyList()
-            }
-            if (countBlocks(rowStates) != expected) {
-                return false
-            }
+            rowBlocks.add(countBlocks(rowStates))
         }
-        return true
+        return rowBlocks
     }
-
-    private fun countBlocks(cells: Array<CellState>): List<Int> =
-        countBlocks(cells.toList())
 
     private fun countBlocks(cells: List<CellState>): List<Int> {
         val counts = mutableListOf<Int>()
@@ -58,6 +41,6 @@ class Board(val cols: List<List<Int>>, val rows: List<List<Int>>) {
     }
 
     override fun toString(): String {
-        return "Board{cols=$cols, rows=$rows}"
+        return "Board{columnSize=$columnSize, rows=$rowSize}"
     }
 }
