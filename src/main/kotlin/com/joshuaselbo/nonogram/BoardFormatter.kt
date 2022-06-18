@@ -54,8 +54,9 @@ class BoardFormatter {
                 var line = "".padStart(maxRowLen - 1)
                 for ((colIndex, col) in board.columnBlocks.withIndex()) {
                     val maxDigitLen = colWidths[colIndex]
-                    line += if (maxColBlockLen - i - 1 < col.size) {
-                        val block = col[maxColBlockLen - i - 1]
+                    val offset = maxColBlockLen - col.size
+                    line += if (i - offset >= 0) {
+                        val block = col[i - offset]
                         val digitCount = digitCount(block)
                         val padded = block.toString() + " ".repeat(maxDigitLen - digitCount)
                         "|$padded"
