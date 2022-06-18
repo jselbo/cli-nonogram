@@ -1,5 +1,5 @@
 package com.joshuaselbo.nonogram
 
-enum class PuzzleCreatorOption {
+enum class PuzzleMenuOption {
     COPY, WRITE, EDIT, MENU,
 }

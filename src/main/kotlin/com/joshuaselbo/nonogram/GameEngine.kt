@@ -47,10 +47,20 @@ private class MenuEntry(val name: String, val destination: MenuDestination)
 
 class GameEngine(private val terminal: Terminal) {
 
+    private val controlsMessage = """
+        ${ANSI_BOLD}Controls$ANSI_RESET
+        
+        - Arrow keys  -> Move
+        - Space       -> Mark filled
+        - X           -> Mark empty
+        - Q           -> Quit
+        """.trimIndent()
+
     private val bindingReader = BindingReader(terminal.reader())
     private val menuKeyMap = KeyMap<Action>()
     private val puzzleKeyMap = KeyMap<Action>()
-    private val puzzleCreatorOptionKeyMap = KeyMap<PuzzleCreatorOption>()
+    private val puzzleMenuKeyMap = KeyMap<PuzzleMenuOption>()
+    private val puzzleCreatorMenuKeyMap = KeyMap<PuzzleMenuOption>()
     private val menuEntries = listOf(
         MenuEntry("Puzzle 1 (Easy)", ResourcePuzzleIdentifier("p1.txt")),
         MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
@@ -70,6 +80,7 @@ class GameEngine(private val terminal: Terminal) {
         menuKeyMap.bind(Action.UP, ANSI_UP, ANSI_UP_WIN)
         menuKeyMap.bind(Action.DOWN, ANSI_DOWN, ANSI_DOWN_WIN)
         menuKeyMap.bind(Action.CONFIRM, " ", ANSI_CR)
+        menuKeyMap.bind(Action.END, "q", "Q")
 
         puzzleKeyMap.bind(Action.UP, ANSI_UP, ANSI_UP_WIN)
         puzzleKeyMap.bind(Action.DOWN, ANSI_DOWN, ANSI_DOWN_WIN)
@@ -77,13 +88,15 @@ class GameEngine(private val terminal: Terminal) {
         puzzleKeyMap.bind(Action.LEFT, ANSI_LEFT, ANSI_LEFT_WIN)
         puzzleKeyMap.bind(Action.MARK_DOT, "x", "X")
         puzzleKeyMap.bind(Action.MARK_FILL, " ")
-        // TODO maybe esc isn't good - there is unavoidable delay because of other escape sequences
-        puzzleKeyMap.bind(Action.END, ANSI_ESC)
+        puzzleKeyMap.bind(Action.END, "q", "Q")
 
-        puzzleCreatorOptionKeyMap.bind(PuzzleCreatorOption.COPY, "c", "C")
-        puzzleCreatorOptionKeyMap.bind(PuzzleCreatorOption.WRITE, "f", "F")
-        puzzleCreatorOptionKeyMap.bind(PuzzleCreatorOption.EDIT, "e", "E")
-        puzzleCreatorOptionKeyMap.bind(PuzzleCreatorOption.MENU, "m", "M")
+        puzzleMenuKeyMap.bind(PuzzleMenuOption.EDIT, "z", "Z")
+        puzzleMenuKeyMap.bind(PuzzleMenuOption.MENU, "m", "M")
+
+        puzzleCreatorMenuKeyMap.bind(PuzzleMenuOption.COPY, "c", "C")
+        puzzleCreatorMenuKeyMap.bind(PuzzleMenuOption.WRITE, "f", "F")
+        puzzleCreatorMenuKeyMap.bind(PuzzleMenuOption.EDIT, "z", "Z")
+        puzzleCreatorMenuKeyMap.bind(PuzzleMenuOption.MENU, "m", "M")
     }
 
 
@@ -103,20 +116,17 @@ class GameEngine(private val terminal: Terminal) {
         val writer = terminal.writer()
         when (gameState) {
             GameState.MENU -> {
-                writer.run {
-                    var menu = "$ANSI_CLEAR\n"
-                    for ((i, puzzle) in menuEntries.withIndex()) {
-                        menu += if (i == menuCursorIndex) {
-                            "> "
-                        } else {
-                            "  "
-                        }
-                        menu += puzzle.name + "\n"
+                var menu = "$ANSI_CLEAR\n"
+                for ((i, puzzle) in menuEntries.withIndex()) {
+                    menu += if (i == menuCursorIndex) {
+                        "> "
+                    } else {
+                        "  "
                     }
-                    menu += "\n"
-                    println(menu)
-                    flush()
+                    menu += puzzle.name + "\n"
                 }
+                menu += "\nPress 'Q' or ^C to quit."
+                writer.println(menu)
 
                 when (bindingReader.readBinding(menuKeyMap)) {
                     Action.UP -> menuCursorIndex = max(menuCursorIndex-1, 0)
@@ -132,24 +142,14 @@ class GameEngine(private val terminal: Terminal) {
                             }
                         }
                     }
+                    Action.END -> {
+                        exitProcess(0)
+                    }
                     else -> {}
                 }
             }
             GameState.CONTROLS -> {
-                writer.run {
-                    println(
-                        """
-                        $ANSI_BOLD Controls$ANSI_RESET
-                        
-                          - Up, Down, Right, Left -> Move
-                          - Space                 -> Mark filled
-                          - x                     -> Mark empty
-                          
-                          $CONTINUE_MESSAGE
-                    """.trimIndent()
-                    )
-                    flush()
-                }
+                writer.println(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
 
                 terminal.reader().read()
 
@@ -170,8 +170,8 @@ class GameEngine(private val terminal: Terminal) {
                 writer.print(getTerminalCursorPos(boardFormat))
 
                 var solved = false
-                var ended = false
-                while (!solved && !ended) {
+                var paused = false
+                while (!solved && !paused) {
                     when (bindingReader.readBinding(puzzleKeyMap)) {
                         Action.UP -> {
                             rowCursor = max(0, rowCursor - 1)
@@ -204,7 +204,7 @@ class GameEngine(private val terminal: Terminal) {
                             writer.print(newCellState.toFormatString() + ANSI_LEFT)
                         }
                         Action.END -> {
-                            ended = true
+                            paused = true
                         }
                         else -> {
                             // May be null on end of stream, if the program is already dying from ctrl+c
@@ -236,20 +236,34 @@ class GameEngine(private val terminal: Terminal) {
                     gameState = GameState.MENU
                 } else {
                     when (gameState) {
-                        // TODO maybe confirm pause before jumping back to menu
-                        GameState.PUZZLE -> gameState = GameState.MENU
-                        GameState.PUZZLE_CREATOR_INTERACTIVE -> {
+                        GameState.PUZZLE -> {
                             writer.println("""
-                                ${ANSI_BOLD}Editing Paused$ANSI_RESET
+                                ${ANSI_BOLD}Paused$ANSI_RESET
                                 
-                                - Press C to copy puzzle format to your clipboard
-                                - Press F to write puzzle format to a file
-                                - Press E to continue editing
+                                - Press Z to continue solving
                                 - Press M to return to menu
                             """.trimIndent())
 
-                            when (bindingReader.readBinding(puzzleCreatorOptionKeyMap)) {
-                                PuzzleCreatorOption.COPY -> {
+                            when (bindingReader.readBinding(puzzleMenuKeyMap)) {
+                                PuzzleMenuOption.EDIT -> Unit
+                                PuzzleMenuOption.MENU -> {
+                                    gameState = GameState.MENU
+                                }
+                                else -> {}
+                            }
+                        }
+                        GameState.PUZZLE_CREATOR_INTERACTIVE -> {
+                            writer.println("""
+                                ${ANSI_BOLD}Paused$ANSI_RESET
+                                
+                                - Press C to copy puzzle format to your clipboard
+                                - Press F to write puzzle format to a file
+                                - Press Z to continue editing
+                                - Press M to return to menu
+                            """.trimIndent())
+
+                            when (bindingReader.readBinding(puzzleCreatorMenuKeyMap)) {
+                                PuzzleMenuOption.COPY -> {
                                     Toolkit.getDefaultToolkit()
                                         .systemClipboard
                                         .setContents(
@@ -264,9 +278,9 @@ class GameEngine(private val terminal: Terminal) {
                                         """.trimIndent())
                                     terminal.reader().read()
                                 }
-                                PuzzleCreatorOption.WRITE -> TODO()
-                                PuzzleCreatorOption.EDIT -> Unit
-                                PuzzleCreatorOption.MENU -> {
+                                PuzzleMenuOption.WRITE -> TODO()
+                                PuzzleMenuOption.EDIT -> Unit
+                                PuzzleMenuOption.MENU -> {
                                     gameState = GameState.MENU
                                 }
                                 else -> {}
@@ -295,11 +309,7 @@ class GameEngine(private val terminal: Terminal) {
                 }
 
                 writer.println()
-                writer.println("""
-                    During creator mode, regular controls apply. Press "ESC" key to finish.
-                    
-                    $CONTINUE_MESSAGE
-                """.trimIndent())
+                writer.println(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
                 terminal.reader().read()
 
                 val board = PuzzleCreatorBoard(numColumns, numRows)
