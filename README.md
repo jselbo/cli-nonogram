@@ -10,7 +10,7 @@ For more information on nonogram puzzles: https://en.wikipedia.org/wiki/Nonogram
 
 ### Prerequisites
 
-- Java installed and on path (Check with `java -version`)
+- Java (JDK) installed and on path (Check with `javac -version`)
 
 ### How to Run
 
