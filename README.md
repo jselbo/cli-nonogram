@@ -32,7 +32,9 @@ Tested on:
 - Mac
   - ✔ Terminal 
   - ✔ iTerm
+- Ubuntu
+  - ✔ Terminal (Known issue: filled cells render too wide)
 
-Uses [JLine](https://github.com/jline/jline3) with [Jansi](https://github.com/fusesource/jansi) to read raw key presses from terminal across platforms.
+Uses [JLine](https://github.com/jline/jline3) with [Jansi](https://github.com/fusesource/jansi) for cross-platform terminal support.
 
 Please create an issue if you run into trouble.
