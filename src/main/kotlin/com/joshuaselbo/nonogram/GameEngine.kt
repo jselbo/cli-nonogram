@@ -130,7 +130,7 @@ class GameEngine(private val terminal: Terminal) {
                     menu += puzzle.name + "\n"
                 }
                 menu += "\nPress 'Q' or ^C to quit."
-                writer.println(menu)
+                writer.fprintln(menu)
 
                 when (bindingReader.readBinding(menuKeyMap)) {
                     Action.UP -> menuCursorIndex = max(menuCursorIndex-1, 0)
@@ -153,7 +153,7 @@ class GameEngine(private val terminal: Terminal) {
                 }
             }
             GameState.CONTROLS -> {
-                writer.println(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
+                writer.fprintln(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
 
                 terminal.reader().read()
 
@@ -168,10 +168,10 @@ class GameEngine(private val terminal: Terminal) {
                 rowCursor = 0
                 colCursor = 0
 
-                writer.println(ANSI_CLEAR)
-                writer.println(boardFormat.contents)
+                writer.fprintln(ANSI_CLEAR)
+                writer.fprintln(boardFormat.contents)
 
-                writer.print(getTerminalCursorPos(boardFormat))
+                writer.fprint(getTerminalCursorPos(boardFormat))
 
                 var solved = false
                 var paused = false
@@ -179,33 +179,33 @@ class GameEngine(private val terminal: Terminal) {
                     when (bindingReader.readBinding(puzzleKeyMap)) {
                         Action.UP -> {
                             rowCursor = max(0, rowCursor - 1)
-                            writer.print(getTerminalCursorPos(boardFormat))
+                            writer.fprint(getTerminalCursorPos(boardFormat))
                         }
                         Action.DOWN -> {
                             rowCursor = min(board.rowSize - 1, rowCursor + 1)
-                            writer.print(getTerminalCursorPos(boardFormat))
+                            writer.fprint(getTerminalCursorPos(boardFormat))
                         }
                         Action.LEFT -> {
                             colCursor = max(0, colCursor - 1)
-                            writer.print(getTerminalCursorPos(boardFormat))
+                            writer.fprint(getTerminalCursorPos(boardFormat))
                         }
                         Action.RIGHT -> {
                             colCursor = min(board.columnSize - 1, colCursor + 1)
-                            writer.print(getTerminalCursorPos(boardFormat))
+                            writer.fprint(getTerminalCursorPos(boardFormat))
                         }
                         Action.MARK_DOT -> {
                             val curr = board.states[colCursor][rowCursor]
                             val newCellState =
                                 if (curr == CellState.DOT) CellState.EMPTY else CellState.DOT
                             board.states[colCursor][rowCursor] = newCellState
-                            writer.print(newCellState.toFormatString() + ANSI_LEFT)
+                            writer.fprint(newCellState.toFormatString() + ANSI_LEFT)
                         }
                         Action.MARK_FILL -> {
                             val curr = board.states[colCursor][rowCursor]
                             val newCellState =
                                 if (curr == CellState.FILL) CellState.EMPTY else CellState.FILL
                             board.states[colCursor][rowCursor] = newCellState
-                            writer.print(newCellState.toFormatString() + ANSI_LEFT)
+                            writer.fprint(newCellState.toFormatString() + ANSI_LEFT)
                         }
                         Action.END -> {
                             paused = true
@@ -222,10 +222,10 @@ class GameEngine(private val terminal: Terminal) {
                     }
                 }
 
-                writer.print(getEndTerminalCursorPos(boardFormat))
+                writer.fprint(getEndTerminalCursorPos(boardFormat))
 
                 if (solved) {
-                    writer.println("""
+                    writer.fprintln("""
                         ${ANSI_BOLD}${ANSI_GREEN}Puzzle Solved!$ANSI_RESET
                         
                         $CONTINUE_MESSAGE
@@ -241,7 +241,7 @@ class GameEngine(private val terminal: Terminal) {
                 } else {
                     when (gameState) {
                         GameState.PUZZLE -> {
-                            writer.println("""
+                            writer.fprintln("""
                                 ${ANSI_BOLD}Paused$ANSI_RESET
                                 
                                 - Press Z to continue solving
@@ -257,7 +257,7 @@ class GameEngine(private val terminal: Terminal) {
                             }
                         }
                         GameState.PUZZLE_CREATOR_INTERACTIVE -> {
-                            writer.println("""
+                            writer.fprintln("""
                                 ${ANSI_BOLD}Paused$ANSI_RESET
                                 
                                 - Press C to copy puzzle format to your clipboard
@@ -275,7 +275,7 @@ class GameEngine(private val terminal: Terminal) {
                                             null
                                         )
 
-                                    writer.println("""
+                                    writer.fprintln("""
                                         ${ANSI_GREEN}Copied to clipboard!$ANSI_RESET
                                         
                                         $CONTINUE_MESSAGE
@@ -285,7 +285,7 @@ class GameEngine(private val terminal: Terminal) {
                                 PuzzleMenuOption.WRITE -> {
                                     var written = false
                                     while (!written) {
-                                        writer.print("Enter file name: ")
+                                        writer.fprint("Enter file name: ")
 
                                         val input = lineReader.readLine()
                                         if (input.isEmpty()) {
@@ -295,11 +295,11 @@ class GameEngine(private val terminal: Terminal) {
                                         try {
                                             path.writeText(serialize(board))
                                             written = true
-                                            writer.println(
+                                            writer.fprintln(
                                                 "${ANSI_GREEN}Success!$ANSI_RESET\n\n$CONTINUE_MESSAGE")
                                             terminal.reader().read()
                                         } catch (e: IOException) {
-                                            writer.println("Error writing file: '${e.message}'")
+                                            writer.fprintln("Error writing file: '${e.message}'")
                                         }
                                     }
                                 }
@@ -315,23 +315,23 @@ class GameEngine(private val terminal: Terminal) {
                 }
             }
             GameState.PUZZLE_CREATOR_SETUP -> {
-                writer.println(ANSI_CLEAR)
-                writer.println("${ANSI_BOLD}Puzzle Creator$ANSI_RESET\n\n")
+                writer.fprintln(ANSI_CLEAR)
+                writer.fprintln("${ANSI_BOLD}Puzzle Creator$ANSI_RESET\n\n")
 
                 var numColumns: Int? = null
                 while (numColumns == null) {
-                    writer.print("Number of columns (puzzle width): ")
+                    writer.fprint("Number of columns (puzzle width): ")
                     numColumns = tryReadInt(lineReader, 1..PUZZLE_CREATOR_MAX_DIMEN)
                 }
 
                 var numRows: Int? = null
                 while (numRows == null) {
-                    writer.print("Number of rows (puzzle height): ")
+                    writer.fprint("Number of rows (puzzle height): ")
                     numRows = tryReadInt(lineReader, 1..PUZZLE_CREATOR_MAX_DIMEN)
                 }
 
-                writer.println()
-                writer.println(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
+                writer.fprintln()
+                writer.fprintln(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
                 terminal.reader().read()
 
                 val board = PuzzleCreatorBoard(numColumns, numRows)
@@ -339,10 +339,10 @@ class GameEngine(private val terminal: Terminal) {
                 gameState = GameState.PUZZLE_CREATOR_INTERACTIVE
             }
             GameState.KEYBOARD_DEBUG -> {
-                writer.println("== Keyboard Debug Mode ==")
+                writer.fprintln("== Keyboard Debug Mode ==")
 
                 val input = terminal.reader().read()
-                writer.println("read: %d / 0x00%x".format(input, input))
+                writer.fprintln("read: %d / 0x00%x".format(input, input))
                 writer.flush()
             }
         }
