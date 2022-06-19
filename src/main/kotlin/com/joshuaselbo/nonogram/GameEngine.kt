@@ -7,7 +7,10 @@ import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.writeText
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.system.exitProcess
@@ -53,7 +56,7 @@ class GameEngine(private val terminal: Terminal) {
         - Arrow keys  -> Move
         - Space       -> Mark filled
         - X           -> Mark empty
-        - Q           -> Quit
+        - Q           -> Quit/Pause
         """.trimIndent()
 
     private val bindingReader = BindingReader(terminal.reader())
@@ -66,6 +69,7 @@ class GameEngine(private val terminal: Terminal) {
         MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
         MenuEntry("Puzzle Creator", PuzzleCreatorDestination)
     )
+    private val lineReader = LineReaderBuilder.builder().terminal(terminal).build()
 
     private var gameState = GameState.MENU
 
@@ -278,7 +282,27 @@ class GameEngine(private val terminal: Terminal) {
                                         """.trimIndent())
                                     terminal.reader().read()
                                 }
-                                PuzzleMenuOption.WRITE -> TODO()
+                                PuzzleMenuOption.WRITE -> {
+                                    var written = false
+                                    while (!written) {
+                                        writer.print("Enter file name: ")
+
+                                        val input = lineReader.readLine()
+                                        if (input.isEmpty()) {
+                                            continue
+                                        }
+                                        val path = Path(input)
+                                        try {
+                                            path.writeText(serialize(board))
+                                            written = true
+                                            writer.println(
+                                                "${ANSI_GREEN}Success!$ANSI_RESET\n\n$CONTINUE_MESSAGE")
+                                            terminal.reader().read()
+                                        } catch (e: IOException) {
+                                            writer.println("Error writing file: '${e.message}'")
+                                        }
+                                    }
+                                }
                                 PuzzleMenuOption.EDIT -> Unit
                                 PuzzleMenuOption.MENU -> {
                                     gameState = GameState.MENU
@@ -293,8 +317,6 @@ class GameEngine(private val terminal: Terminal) {
             GameState.PUZZLE_CREATOR_SETUP -> {
                 writer.println(ANSI_CLEAR)
                 writer.println("${ANSI_BOLD}Puzzle Creator$ANSI_RESET\n\n")
-
-                val lineReader = LineReaderBuilder.builder().terminal(terminal).build()
 
                 var numColumns: Int? = null
                 while (numColumns == null) {
