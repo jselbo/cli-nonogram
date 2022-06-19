@@ -120,7 +120,8 @@ class GameEngine(private val terminal: Terminal) {
         val writer = terminal.writer()
         when (gameState) {
             GameState.MENU -> {
-                var menu = "$ANSI_CLEAR\n"
+                clearTerminal()
+                var menu = ""
                 for ((i, puzzle) in menuEntries.withIndex()) {
                     menu += if (i == menuCursorIndex) {
                         "> "
@@ -147,7 +148,7 @@ class GameEngine(private val terminal: Terminal) {
                         }
                     }
                     Action.END -> {
-                        exitProcess(0)
+                        cleanupAndExit()
                     }
                     else -> {}
                 }
@@ -168,7 +169,7 @@ class GameEngine(private val terminal: Terminal) {
                 rowCursor = 0
                 colCursor = 0
 
-                writer.fprintln(ANSI_CLEAR)
+                clearTerminal()
                 writer.fprintln(boardFormat.contents)
 
                 writer.fprint(getTerminalCursorPos(boardFormat))
@@ -234,7 +235,7 @@ class GameEngine(private val terminal: Terminal) {
                     terminal.reader().read()
 
                     if (exitAfterSolve) {
-                        exitProcess(0)
+                        cleanupAndExit()
                     }
 
                     gameState = GameState.MENU
@@ -315,7 +316,7 @@ class GameEngine(private val terminal: Terminal) {
                 }
             }
             GameState.PUZZLE_CREATOR_SETUP -> {
-                writer.fprintln(ANSI_CLEAR)
+                clearTerminal()
                 writer.fprintln("${ANSI_BOLD}Puzzle Creator$ANSI_RESET\n\n")
 
                 var numColumns: Int? = null
@@ -367,6 +368,17 @@ class GameEngine(private val terminal: Terminal) {
                 return null
             }
         return if (inputAsInt in acceptedRange) { inputAsInt } else null
+    }
+
+    private fun clearTerminal() {
+        // After clear, need to reapply desired cursor style
+        terminal.writer().fprintln(ANSI_CLEAR + ansiCursorStyle(CursorStyle.STEADY_UNDERLINE))
+    }
+
+    private fun cleanupAndExit() {
+        // Reset cursor style
+        terminal.writer().fprintln(ansiCursorStyle(CursorStyle.DEFAULT))
+        exitProcess(0)
     }
 
 }

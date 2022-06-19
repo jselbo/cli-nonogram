@@ -33,3 +33,15 @@ const val ANSI_RIGHT_WIN = "\u001BOC"
 const val ANSI_LEFT_WIN = "\u001BOD"
 
 fun ansiCursorPosition(line: Int, col: Int): String = "\u001B[${line};${col}H"
+
+// Source: https://terminalguide.namepad.de/seq/csi_sq_t_space/
+enum class CursorStyle(val code: Int) {
+    DEFAULT(0),
+    BLINKING_BLOCK(1),
+    STEADY_BLOCK(2),
+    BLINKING_UNDERLINE(3),
+    STEADY_UNDERLINE(4),
+    BLINKING_BAR(5),
+    STEADY_BAR(6),
+}
+fun ansiCursorStyle(style: CursorStyle): String = "\u001B[${style.code} q"
