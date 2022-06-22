@@ -75,6 +75,7 @@ class GameEngine(private val terminal: Terminal) {
 
     private var menuCursorIndex = 0
     private var selectedPuzzle: PuzzleIdentifier? = null
+    private var loadedBoard: Board? = null
     private var exitAfterSolve = false
 
     private var rowCursor = 0
@@ -163,7 +164,8 @@ class GameEngine(private val terminal: Terminal) {
             GameState.PUZZLE, GameState.PUZZLE_CREATOR_INTERACTIVE -> {
                 val puzzle = checkNotNull(selectedPuzzle)
 
-                val board = puzzle.load()
+                val board = loadedBoard ?: puzzle.load()
+                loadedBoard = board
                 val boardFormat = BoardFormatter().format(board)
 
                 rowCursor = 0
@@ -238,6 +240,7 @@ class GameEngine(private val terminal: Terminal) {
                         cleanupAndExit()
                     }
 
+                    loadedBoard = null
                     gameState = GameState.MENU
                 } else {
                     when (gameState) {
@@ -252,6 +255,7 @@ class GameEngine(private val terminal: Terminal) {
                             when (bindingReader.readBinding(puzzleMenuKeyMap)) {
                                 PuzzleMenuOption.EDIT -> Unit
                                 PuzzleMenuOption.MENU -> {
+                                    loadedBoard = null
                                     gameState = GameState.MENU
                                 }
                                 else -> {}
@@ -306,6 +310,7 @@ class GameEngine(private val terminal: Terminal) {
                                 }
                                 PuzzleMenuOption.EDIT -> Unit
                                 PuzzleMenuOption.MENU -> {
+                                    loadedBoard = null
                                     gameState = GameState.MENU
                                 }
                                 else -> {}
