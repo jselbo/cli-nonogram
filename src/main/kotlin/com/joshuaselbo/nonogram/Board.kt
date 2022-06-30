@@ -1,6 +1,6 @@
 package com.joshuaselbo.nonogram
 
-sealed class Board(val columnSize: Int, val rowSize: Int) {
+sealed class Board(val name: String, val columnSize: Int, val rowSize: Int) {
 
     val states = Array(columnSize) {
         Array(rowSize) { CellState.EMPTY }

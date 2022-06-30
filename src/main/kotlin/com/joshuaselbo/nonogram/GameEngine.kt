@@ -69,6 +69,7 @@ class GameEngine(private val terminal: Terminal) {
         MenuEntry("Puzzle 2 (5x5)", ResourcePuzzleIdentifier("p2.txt")),
         MenuEntry("Puzzle 3 (5x5)", ResourcePuzzleIdentifier("p3.txt")),
         MenuEntry("Puzzle 4 (10x10)", ResourcePuzzleIdentifier("p4.txt")),
+        // TODO p5 has ambiguous solution
         MenuEntry("Puzzle 5 (10x10)", ResourcePuzzleIdentifier("p5.txt")),
         //MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
         MenuEntry("Puzzle Creator", PuzzleCreatorDestination)
@@ -235,6 +236,8 @@ class GameEngine(private val terminal: Terminal) {
                     writer.fprintln("""
                         ${ANSI_BOLD}${ANSI_GREEN}Puzzle Solved!$ANSI_RESET
                         
+                        ${ANSI_BOLD}${ANSI_CYAN}~~~ ${board.name} ~~~$ANSI_RESET
+                        
                         $CONTINUE_MESSAGE
                         """.trimIndent())
 
@@ -328,6 +331,12 @@ class GameEngine(private val terminal: Terminal) {
                 clearTerminal()
                 writer.fprintln("${ANSI_BOLD}Puzzle Creator$ANSI_RESET\n\n")
 
+                var name: String? = null
+                while (name == null) {
+                    writer.fprint("Puzzle name: ")
+                    name = tryReadString(lineReader)
+                }
+
                 var numColumns: Int? = null
                 while (numColumns == null) {
                     writer.fprint("Number of columns (puzzle width): ")
@@ -344,7 +353,7 @@ class GameEngine(private val terminal: Terminal) {
                 writer.fprintln(controlsMessage + "\n\n" + CONTINUE_MESSAGE)
                 terminal.reader().read()
 
-                val board = PuzzleCreatorBoard(numColumns, numRows)
+                val board = PuzzleCreatorBoard(name, numColumns, numRows)
                 selectedPuzzle = AlreadyLoadedPuzzleIdentifier(board)
                 gameState = GameState.PUZZLE_CREATOR_INTERACTIVE
             }
@@ -377,6 +386,11 @@ class GameEngine(private val terminal: Terminal) {
                 return null
             }
         return if (inputAsInt in acceptedRange) { inputAsInt } else null
+    }
+
+    private fun tryReadString(lineReader: LineReader): String? {
+        val input = lineReader.readLine().trim()
+        return input.ifEmpty { null }
     }
 
     private fun clearTerminal() {

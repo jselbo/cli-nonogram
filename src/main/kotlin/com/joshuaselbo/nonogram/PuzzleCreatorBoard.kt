@@ -1,4 +1,5 @@
 package com.joshuaselbo.nonogram
 
-class PuzzleCreatorBoard(columnSize: Int, rowSize: Int) : Board(columnSize, rowSize) {
+class PuzzleCreatorBoard(name: String, columnSize: Int, rowSize: Int)
+    : Board(name, columnSize, rowSize) {
 }

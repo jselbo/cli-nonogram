@@ -1,8 +1,9 @@
 package com.joshuaselbo.nonogram
 
 class SolvableBoard(
+    name: String,
     val columnBlocks: List<List<Int>>,
-    val rowBlocks: List<List<Int>>) : Board(columnBlocks.size, rowBlocks.size) {
+    val rowBlocks: List<List<Int>>) : Board(name, columnBlocks.size, rowBlocks.size) {
 
     fun isSolved(): Boolean {
         val colBlocks = countColumnBlocks()

@@ -1,8 +1,8 @@
 package com.joshuaselbo.nonogram
 
-import java.io.BufferedReader
 import java.nio.file.Path
-import kotlin.io.path.bufferedReader
+import java.util.*
+import kotlin.io.path.readBytes
 
 const val SUPPORTED_VERSION = 1
 const val COL_ROW_SEPARATOR = "="
@@ -10,36 +10,46 @@ const val COL_ROW_SEPARATOR = "="
 class DummyClass
 
 fun loadBoardFromFile(path: Path): Board {
-    return loadBoard(path.bufferedReader())
+    return loadBoard(path.readBytes())
 }
 
 fun loadBoardFromResource(filename: String): Board {
-    val reader = DummyClass::class.java.classLoader.getResourceAsStream(filename).bufferedReader()
-    return loadBoard(reader)
+    val stream = DummyClass::class.java.classLoader.getResourceAsStream(filename)
+    return loadBoard(stream.readBytes())
 }
 
 fun serialize(board: Board): String {
-    var contents = "V$SUPPORTED_VERSION\n"
+    var contents = "V$SUPPORTED_VERSION\n${board.name}\n"
     for (colBlocks in board.countColumnBlocks()) {
         contents += formatBlocks(colBlocks).joinToString(" ") + "\n"
     }
-    contents += "=\n"
+    contents += "$COL_ROW_SEPARATOR\n"
     for (rowBlocks in board.countRowBlocks()) {
         contents += formatBlocks(rowBlocks).joinToString(" ") + "\n"
     }
-    return contents
+    return Base64.getEncoder().encodeToString(contents.toByteArray())
 }
 
-private fun loadBoard(reader: BufferedReader): Board {
-    val version = reader.readLine().trim('v', 'V').toInt()
+private fun loadBoard(input: ByteArray): Board {
+    val decoded = Base64.getDecoder().decode(input)
+    val lines = decoded.decodeToString().split("\n")
+    if (lines.size < 2) {
+        throw RuntimeException("Invalid puzzle")
+    }
+
+    val version = lines[0].trim('v', 'V').toInt()
     if (version > SUPPORTED_VERSION) {
         error("Unsupported file version: $version")
     }
-    val lines = reader.readLines()
+
+    val name = lines[1]
+
     val columns = mutableListOf<List<Int>>()
     val rows = mutableListOf<List<Int>>()
     var readingRows = false
-    for (line in lines) {
+    for (line in lines.subList(2, lines.size)) {
+        if (line.isEmpty()) continue
+
         if (line == COL_ROW_SEPARATOR) {
             readingRows = true
         } else {
@@ -71,7 +81,7 @@ private fun loadBoard(reader: BufferedReader): Board {
     if (rows.isEmpty()) {
         error("No rows")
     }
-    return SolvableBoard(columns, rows)
+    return SolvableBoard(name, columns, rows)
 }
 
 private fun formatBlocks(blocks: List<Int>): List<Int> =
