@@ -19,7 +19,7 @@ fun loadBoardFromResource(filename: String): Board {
 }
 
 fun serialize(board: Board): String {
-    var contents = "$SUPPORTED_VERSION\n"
+    var contents = "V$SUPPORTED_VERSION\n"
     for (colBlocks in board.countColumnBlocks()) {
         contents += formatBlocks(colBlocks).joinToString(" ") + "\n"
     }

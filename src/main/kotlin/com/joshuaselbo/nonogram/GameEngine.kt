@@ -65,8 +65,12 @@ class GameEngine(private val terminal: Terminal) {
     private val puzzleMenuKeyMap = KeyMap<PuzzleMenuOption>()
     private val puzzleCreatorMenuKeyMap = KeyMap<PuzzleMenuOption>()
     private val menuEntries = listOf(
-        MenuEntry("Puzzle 1 (Easy)", ResourcePuzzleIdentifier("p1.txt")),
-        MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
+        MenuEntry("Puzzle 1 (5x5)", ResourcePuzzleIdentifier("p1.txt")),
+        MenuEntry("Puzzle 2 (5x5)", ResourcePuzzleIdentifier("p2.txt")),
+        MenuEntry("Puzzle 3 (5x5)", ResourcePuzzleIdentifier("p3.txt")),
+        MenuEntry("Puzzle 4 (10x10)", ResourcePuzzleIdentifier("p4.txt")),
+        MenuEntry("Puzzle 5 (10x10)", ResourcePuzzleIdentifier("p5.txt")),
+        //MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
         MenuEntry("Puzzle Creator", PuzzleCreatorDestination)
     )
     private val lineReader = LineReaderBuilder.builder().terminal(terminal).build()
