@@ -75,7 +75,11 @@ class GameEngine(private val terminal: Terminal) {
         //MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
         MenuEntry("Puzzle Creator", PuzzleCreatorDestination)
     )
-    private val lineReader = LineReaderBuilder.builder().terminal(terminal).build()
+    private val lineReader =
+        LineReaderBuilder.builder()
+            .terminal(terminal)
+            .history(NoOpHistory())
+            .build()
 
     private var gameState = GameState.MENU
 
@@ -298,9 +302,7 @@ class GameEngine(private val terminal: Terminal) {
                                 PuzzleMenuOption.WRITE -> {
                                     var written = false
                                     while (!written) {
-                                        writer.fprint("Enter file name: ")
-
-                                        val input = lineReader.readLine()
+                                        val input = lineReader.readLine("Enter file name: ")
                                         if (input.isEmpty()) {
                                             continue
                                         }
@@ -334,20 +336,17 @@ class GameEngine(private val terminal: Terminal) {
 
                 var name: String? = null
                 while (name == null) {
-                    writer.fprint("Puzzle name: ")
-                    name = tryReadString(lineReader)
+                    name = tryReadString("Puzzle name: ")
                 }
 
                 var numColumns: Int? = null
                 while (numColumns == null) {
-                    writer.fprint("Number of columns (puzzle width): ")
-                    numColumns = tryReadInt(lineReader, 1..PUZZLE_CREATOR_MAX_DIMEN)
+                    numColumns = tryReadInt("Number of columns (width), 1-20: ", 1..PUZZLE_CREATOR_MAX_DIMEN)
                 }
 
                 var numRows: Int? = null
                 while (numRows == null) {
-                    writer.fprint("Number of rows (puzzle height): ")
-                    numRows = tryReadInt(lineReader, 1..PUZZLE_CREATOR_MAX_DIMEN)
+                    numRows = tryReadInt("Number of rows (height), 1-20: ", 1..PUZZLE_CREATOR_MAX_DIMEN)
                 }
 
                 writer.fprintln()
@@ -378,8 +377,8 @@ class GameEngine(private val terminal: Terminal) {
         return ansiCursorPosition(row, col)
     }
 
-    private fun tryReadInt(lineReader: LineReader, acceptedRange: IntRange): Int? {
-        val input = lineReader.readLine()
+    private fun tryReadInt(prompt: String, acceptedRange: IntRange): Int? {
+        val input = lineReader.readLine(prompt)
         val inputAsInt =
             try {
                 input.toInt()
@@ -389,8 +388,8 @@ class GameEngine(private val terminal: Terminal) {
         return if (inputAsInt in acceptedRange) { inputAsInt } else null
     }
 
-    private fun tryReadString(lineReader: LineReader): String? {
-        val input = lineReader.readLine().trim()
+    private fun tryReadString(prompt: String): String? {
+        val input = lineReader.readLine(prompt).trim()
         return input.ifEmpty { null }
     }
 
