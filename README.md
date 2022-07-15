@@ -2,9 +2,9 @@
 
 ### Overview
 
-Terminal-based nonogram puzzle game with 10 included puzzles and custom puzzle support.
+Terminal-based nonogram puzzle game with 7 included puzzles and support for custom puzzles.
 
-TODO add gif
+![Demo](https://github.com/jselbo/cli-nonogram/blob/master/demo.gif?raw=true "Demo")
 
 For more information on nonogram puzzles: https://en.wikipedia.org/wiki/Nonogram
 
