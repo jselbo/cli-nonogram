@@ -51,6 +51,7 @@ class BoardFormatter {
 
         if (board is SolvableBoard) {
             for (i in 0 until maxColBlockLen) {
+                // TODO consider uniform column widths
                 var line = "".padStart(maxRowLen - 1)
                 for ((colIndex, col) in board.columnBlocks.withIndex()) {
                     val maxDigitLen = colWidths[colIndex]

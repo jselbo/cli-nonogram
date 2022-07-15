@@ -69,8 +69,9 @@ class GameEngine(private val terminal: Terminal) {
         MenuEntry("Puzzle 2 (5x5)", ResourcePuzzleIdentifier("p2.txt")),
         MenuEntry("Puzzle 3 (5x5)", ResourcePuzzleIdentifier("p3.txt")),
         MenuEntry("Puzzle 4 (10x10)", ResourcePuzzleIdentifier("p4.txt")),
-        // TODO p5 has ambiguous solution
         MenuEntry("Puzzle 5 (10x10)", ResourcePuzzleIdentifier("p5.txt")),
+        MenuEntry("Puzzle 6 (10x10)", ResourcePuzzleIdentifier("p6.txt")),
+        MenuEntry("Puzzle 7 (10x10)", ResourcePuzzleIdentifier("p7.txt")),
         //MenuEntry("Debug Puzzle", ResourcePuzzleIdentifier("debug.txt")),
         MenuEntry("Puzzle Creator", PuzzleCreatorDestination)
     )
