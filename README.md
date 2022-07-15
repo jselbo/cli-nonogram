@@ -22,8 +22,11 @@ For more information on nonogram puzzles: https://en.wikipedia.org/wiki/Nonogram
 ### Technical Details
 
 Tested on:
-- ✔️Windows CMD
-- TODO
+- Windows
+  - ✔ Command Prompt (cmd.exe)
+  - ✔ Powershell
+- Mac
+  - ✔ Terminal 
 
 Uses [JLine](https://github.com/jline/jline3) with [Jansi](https://github.com/fusesource/jansi) to read raw key presses from terminal across platforms.
 
