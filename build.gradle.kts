@@ -34,6 +34,8 @@ application {
 
 task<DefaultTask>("printClasspath") {
     doFirst {
-        println(sourceSets.main.get().runtimeClasspath.files.joinToString(";"))
+        val properties = System.getProperties()
+        val pathSeparator = properties.getProperty("path.separator")
+        println(sourceSets.main.get().runtimeClasspath.files.joinToString(pathSeparator))
     }
 }
