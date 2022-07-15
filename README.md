@@ -27,6 +27,7 @@ Tested on:
   - ✔ Powershell
 - Mac
   - ✔ Terminal 
+  - ✔ iTerm
 
 Uses [JLine](https://github.com/jline/jline3) with [Jansi](https://github.com/fusesource/jansi) to read raw key presses from terminal across platforms.
 
