@@ -2,11 +2,13 @@
 
 ### Overview
 
-Terminal-based nonogram puzzle game with 7 included puzzles and support for custom puzzles.
+Terminal nonogram puzzle game with 7 included puzzles and custom puzzle creator.
 
 ![Demo](https://github.com/jselbo/cli-nonogram/blob/master/demo.gif?raw=true "Demo")
 
 For more information on nonogram puzzles: https://en.wikipedia.org/wiki/Nonogram
+
+<sub>Also called Hanjie, Paint by Numbers, Picross, Griddlers, and Pic-a-Pix</sub>
 
 ### Prerequisites
 
