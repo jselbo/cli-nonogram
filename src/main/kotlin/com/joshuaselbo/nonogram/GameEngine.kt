@@ -127,6 +127,12 @@ class GameEngine(private val terminal: Terminal) {
         }
     }
 
+    fun cleanupAndExit() {
+        // Reset cursor style
+        terminal.writer().fprintln(ansiCursorStyle(CursorStyle.DEFAULT))
+        exitProcess(0)
+    }
+
     private fun doGameLoop() {
         val writer = terminal.writer()
         when (gameState) {
@@ -394,14 +400,6 @@ class GameEngine(private val terminal: Terminal) {
     }
 
     private fun clearTerminal() {
-        // After clear, need to reapply desired cursor style
-        terminal.writer().fprintln(ANSI_CLEAR + ansiCursorStyle(CursorStyle.STEADY_UNDERLINE))
+        terminal.writer().fprintln(ANSI_CLEAR)
     }
-
-    private fun cleanupAndExit() {
-        // Reset cursor style
-        terminal.writer().fprintln(ansiCursorStyle(CursorStyle.DEFAULT))
-        exitProcess(0)
-    }
-
 }

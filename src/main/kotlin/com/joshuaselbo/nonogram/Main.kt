@@ -43,16 +43,18 @@ fun main(args: Array<String>) {
     }
 
     terminal.enterRawMode()
+    terminal.writer().print(ansiCursorStyle(CursorStyle.STEADY_UNDERLINE))
+
+    val gameEngine = GameEngine(terminal)
 
     // On Windows it seems interrupt (ctrl+c) needs to be handled manually
     terminal.handle(Terminal.Signal.INT) {
         // Clear terminal first; otherwise shell resumes wherever cursor was and looks bad
-        terminal.writer().println(ANSI_CLEAR)
+        gameEngine.cleanupAndExit()
 
         exitProcess(0)
     }
 
-    val gameEngine = GameEngine(terminal)
     if (customPuzzlePath != null) {
         gameEngine.selectCustomPuzzle(customPuzzlePath)
     }
